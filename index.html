@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Kimbal Slack usage dashboard for the 30 days ending July 8, 2026." />
+  <title>Kimbal | Slack usage</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">KIMBAL · WORKSPACE HEALTH</p>
+        <h1>Slack usage, at a glance.</h1>
+        <p class="subhead">30-day member and channel activity ending <strong>08 Jul 2026</strong></p>
+      </div>
+      <div class="period"><span>Reporting window</span><strong>Prior 30 days</strong><small>Source snapshot: 08 Jul 2026</small></div>
+    </header>
+
+    <section class="kpis" aria-label="Key performance indicators">
+      <article class="kpi accent"><p>Adoption rate</p><strong>48.0%</strong><span>342 of 712 listed accounts active</span></article>
+      <article class="kpi"><p>MAU</p><strong>342</strong><span>Members with ≥1 active day</span></article>
+      <article class="kpi"><p>Average DAU</p><strong>20.5</strong><span>Active member-days ÷ 30</span></article>
+      <article class="kpi"><p>Stickiness</p><strong>6.0%</strong><span>Average DAU ÷ MAU</span></article>
+      <article class="kpi"><p>Message authors</p><strong>59</strong><span>8.3% of listed accounts</span></article>
+      <article class="kpi"><p>Messages posted</p><strong>310</strong><span>Across Slack, including DMs</span></article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <div class="panel-heading"><div><p class="eyebrow">ENGAGEMENT DISTRIBUTION</p><h2>Active days per member</h2></div><span class="tag">712 accounts</span></div>
+        <div class="bar-chart" aria-label="Distribution of active days">
+          <div class="bar-row"><span>0 days</span><div class="track"><i style="width:100%"></i></div><b>370</b></div>
+          <div class="bar-row"><span>1–2 days</span><div class="track"><i style="width:73%"></i></div><b>270</b></div>
+          <div class="bar-row"><span>3–5 days</span><div class="track"><i style="width:19%"></i></div><b>71</b></div>
+          <div class="bar-row"><span>6+ days</span><div class="track"><i style="width:1%"></i></div><b>1</b></div>
+        </div>
+        <p class="insight"><strong>Signal:</strong> 370 accounts had no recorded active day. The median member had 0 active days.</p>
+      </article>
+
+      <article class="panel">
+        <div class="panel-heading"><div><p class="eyebrow">ACCESS MIX</p><h2>Members active by device</h2></div><span class="tag">May overlap</span></div>
+        <div class="donut-wrap">
+          <div class="donut"><div><strong>327</strong><span>device counts</span></div></div>
+          <ul class="legend">
+            <li><i class="desktop"></i><span>Desktop</span><b>201</b></li>
+            <li><i class="android"></i><span>Android</span><b>85</b></li>
+            <li><i class="ios"></i><span>iOS</span><b>41</b></li>
+          </ul>
+        </div>
+        <p class="insight">Desktop accounts for <strong>61%</strong> of recorded device-active member counts; a member may use more than one device.</p>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <div class="panel-heading"><div><p class="eyebrow">CHANNEL ACTIVITY</p><h2>Most active measured channels</h2></div><span class="tag">21 channels</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Channel</th><th>Messages</th><th>Viewers</th><th>Posters</th></tr></thead><tbody>
+          <tr><td>#members-sg-anson</td><td>38</td><td>19</td><td>10</td></tr>
+          <tr><td>#slack-support</td><td>27</td><td>126</td><td>8</td></tr>
+          <tr><td>#automation-in-action</td><td>21</td><td>160</td><td>1</td></tr>
+          <tr><td>#devops</td><td>16</td><td>9</td><td>4</td></tr>
+          <tr><td>#kconnect</td><td>15</td><td>13</td><td>0</td></tr>
+          <tr><td>#1engg-tech-pub</td><td>11</td><td>2</td><td>1</td></tr>
+        </tbody></table></div>
+      </article>
+
+      <article class="panel channel-health">
+        <div class="panel-heading"><div><p class="eyebrow">CHANNEL FOOTPRINT</p><h2>Workspace structure</h2></div><span class="tag">112 channels</span></div>
+        <div class="split-stat"><div><strong>21</strong><span>public channels</span></div><div><strong>91</strong><span>private channels</span></div></div>
+        <div class="micro-grid"><div><strong>21</strong><span>channels with activity stats</span></div><div><strong>229</strong><span>messages in measured channels</span></div><div><strong>655</strong><span>channel view events</span></div><div><strong>35</strong><span>channel posts authors</span></div></div>
+        <p class="insight">Activity metrics are available for the 21 public channels in the channel export. The private-channel inventory is count-only.</p>
+      </article>
+    </section>
+
+    <section class="callout"><div><p class="eyebrow">EXECUTIVE READOUT</p><h2>Reach is the biggest opportunity.</h2><p>Nearly half of listed accounts were active, but only 8.3% authored a message. Focus onboarding and repeat-use moments on the 370 inactive accounts before optimizing advanced collaboration habits.</p></div><div class="callout-metric"><strong>40.8 pts</strong><span>gap between adoption and message-author rate</span></div></section>
+
+    <footer><span>Data: Slack Member Analytics + Channel Analytics exports supplied by Kimbal.</span><span>Privacy: aggregated member metrics only.</span></footer>
+  </main>
+</body>
+</html>

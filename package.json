@@ -1,0 +1,10 @@
+{
+  "name": "kimbal-slack-usage-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static Slack usage dashboard generated from Kimbal's 30-day analytics exports.",
+  "scripts": {
+    "start": "npx serve .",
+    "build": "node -e \"console.log('Static site ready in repository root')\""
+  }
+}
