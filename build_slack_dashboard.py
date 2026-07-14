@@ -44,7 +44,17 @@ LAUNCH_DATE = date(2026, 7, 3)      # workspace go-live
 CUTOVER_DATE = date(2026, 7, 30)    # WhatsApp hard cutover
 WINDOW_DAYS = 30                    # export window ("Prior 30 Days")
 
-BENCH = {"adoption": 65, "stickiness": 50, "posting": 50, "engagement": 40}
+BENCH = {
+    # directional targets for a healthy deployment ~90 days post-cutover — edit freely
+    "adoption": 65,          # MAU / provisioned accounts, %
+    "stickiness": 50,        # DAU / MAU, %
+    "posting": 50,           # members posting / MAU, %
+    "engagement": 40,        # (posted or reacted) / MAU, %
+    "invite_acceptance": 90, # joined / provisioned, %
+    "mobile_share": 40,      # MAU active on Android or iOS / MAU, %
+    "reactions_per_msg": 0.5,   # reactions added per member message
+    "msgs_per_active_week": 15, # member messages per MAU per week
+}
 
 DATE_RE = re.compile(r"([A-Z][a-z]{2})[ _-]+(\d{1,2})[,_ -]+(\d{4})")
 
@@ -348,6 +358,11 @@ td.lft{text-align:left;font-weight:400;color:var(--sub)}
 .pico{width:15px;height:15px;vertical-align:-2px;margin:0 3px}
 input.search{padding:8px 12px;border:1px solid var(--mist);border-radius:8px;font-size:13px;width:240px;font-family:'Inter'}
 input.search:focus{outline:2px solid var(--blue);border-color:transparent}
+.badge{display:inline-block;font-size:10.5px;font-weight:700;border-radius:6px;padding:3px 9px;letter-spacing:.03em}
+.badge.ok{background:#E3F6EE;color:#0B9E6C}
+.badge.mid{background:#FFF3E4;color:#C77700}
+.badge.low{background:#FDE8E8;color:#C0392B}
+.gapbar{display:inline-block;height:7px;border-radius:4px;background:var(--indigo);vertical-align:middle;margin-right:7px;min-width:2px}
 .pill{display:inline-block;font-size:10px;font-weight:600;border-radius:999px;padding:2px 8px;background:#EAF4FF;color:var(--blue);margin-left:6px;vertical-align:middle}
 .btn{padding:8px 14px;border-radius:8px;border:1px solid var(--mist);background:#fff;font-size:12px;font-weight:600;color:var(--indigo);cursor:pointer;font-family:'Inter'}
 .btn:hover{background:#F4F6FF}
@@ -409,6 +424,19 @@ footer b{color:var(--ink)}
     <div class="panel"><h3>App &amp; bot messages per day</h3>
       <div class="hint" id="appHint">From app analytics export · unaffected by filters</div>
       <div class="chart-wrap tall"><canvas id="appDaily"></canvas></div></div>
+  </div>
+</section>
+
+<!-- BENCHMARK SCORECARD -->
+<section>
+  <div class="sec-title">Benchmark scorecard <span>Kimbal (current view) vs healthy-Slack targets · directional, ~90 days post-cutover</span></div>
+  <div class="panel" style="padding:10px 18px 14px">
+    <div style="overflow-x:auto">
+    <table id="btbl"><thead><tr>
+      <th style="text-align:left">Metric</th><th>Kimbal</th><th>Benchmark</th><th>Gap</th>
+      <th style="text-align:left">Status</th><th style="text-align:left">How it's calculated</th>
+    </tr></thead><tbody></tbody></table>
+    </div>
   </div>
 </section>
 
@@ -479,7 +507,7 @@ function baseFiltered(){ // without search box, for KPIs/charts
  return M.filter(m=>(!stage||STAGE_DEF[stage].test(m))&&(!plat||m[PLAT_DEF[plat].i]>0));
 }
 function stats(rows){
- const s={accounts:rows.length,joined:0,invited:0,mau:0,daysSum:0,msgs:0,posters:0,reactors:0,engaged:0,desktop:0,android:0,ios:0};
+ const s={accounts:rows.length,joined:0,invited:0,mau:0,daysSum:0,msgs:0,posters:0,reactors:0,engaged:0,desktop:0,android:0,ios:0,mobile:0,reacts:0};
  for(const m of rows){
   if(m[2]==='Invited Member') s.invited++; else s.joined++;
   if(m[3]>0) s.mau++;
@@ -488,6 +516,8 @@ function stats(rows){
   if(m[8]>0) s.reactors++;
   if(m[7]>0||m[8]>0) s.engaged++;
   if(m[4]>0) s.desktop++; if(m[5]>0) s.android++; if(m[6]>0) s.ios++;
+  if(m[5]>0||m[6]>0) s.mobile++;
+  s.reacts+=m[8];
  }
  s.dau=Math.round(s.daysSum/L.live_days);
  s.adoption=s.accounts?+(s.mau/s.accounts*100).toFixed(1):0;
@@ -495,6 +525,10 @@ function stats(rows){
  s.stick=s.mau?+(s.dau/s.mau*100).toFixed(1):0;
  s.posting=s.mau?+(s.posters/s.mau*100).toFixed(1):0;
  s.engRate=s.mau?+(s.engaged/s.mau*100).toFixed(1):0;
+ s.inviteAcc=s.accounts?+(s.joined/s.accounts*100).toFixed(1):0;
+ s.mobileShare=s.mau?+(s.mobile/s.mau*100).toFixed(1):0;
+ s.reactPerMsg=s.msgs?+(s.reacts/s.msgs).toFixed(2):0;
+ s.msgsPerActiveWk=s.mau?+(s.msgs/s.mau/(L.live_days/7)).toFixed(1):0;
  return s;
 }
 
@@ -639,9 +673,33 @@ function renderChips(){
 }
 document.getElementById('clearAll').addEventListener('click',()=>{stage=null;plat=null;refresh();});
 
+function renderScorecard(s){
+ const rows=[
+  {m:'Adoption', k:s.adoption+'%', kv:s.adoption, b:D.bench.adoption+'%', bv:D.bench.adoption, how:'MAU ÷ accounts in view = '+fmt(s.mau)+' ÷ '+fmt(s.accounts)},
+  {m:'Stickiness', k:s.stick+'%', kv:s.stick, b:D.bench.stickiness+'%', bv:D.bench.stickiness, how:'est. DAU ÷ MAU = '+fmt(s.dau)+' ÷ '+fmt(s.mau)},
+  {m:'Invite acceptance', k:s.inviteAcc+'%', kv:s.inviteAcc, b:D.bench.invite_acceptance+'%', bv:D.bench.invite_acceptance, how:'joined ÷ provisioned = '+fmt(s.joined)+' ÷ '+fmt(s.accounts)},
+  {m:'Members posting', k:s.posting+'%', kv:s.posting, b:D.bench.posting+'%', bv:D.bench.posting, how:'posters ÷ MAU = '+fmt(s.posters)+' ÷ '+fmt(s.mau)},
+  {m:'Engagement', k:s.engRate+'%', kv:s.engRate, b:D.bench.engagement+'%', bv:D.bench.engagement, how:'(posted ∪ reacted) ÷ MAU = '+fmt(s.engaged)+' ÷ '+fmt(s.mau)},
+  {m:'Mobile share of actives', k:s.mobileShare+'%', kv:s.mobileShare, b:D.bench.mobile_share+'%', bv:D.bench.mobile_share, how:'active on Android/iOS ÷ MAU = '+fmt(s.mobile)+' ÷ '+fmt(s.mau)},
+  {m:'Messages per active / week', k:s.msgsPerActiveWk, kv:s.msgsPerActiveWk, b:D.bench.msgs_per_active_week, bv:D.bench.msgs_per_active_week, how:fmt(s.msgs)+' msgs ÷ '+fmt(s.mau)+' MAU ÷ '+(L.live_days/7).toFixed(1)+' weeks'},
+  {m:'Reactions per message', k:s.reactPerMsg, kv:s.reactPerMsg, b:D.bench.reactions_per_msg, bv:D.bench.reactions_per_msg, how:fmt(s.reacts)+' reactions ÷ '+fmt(s.msgs)+' member messages'}
+ ];
+ document.querySelector('#btbl tbody').innerHTML=rows.map(r=>{
+  const ratio=r.bv?r.kv/r.bv:0;
+  const badge=ratio>=0.9?'<span class="badge ok">ON TRACK</span>':ratio>=0.6?'<span class="badge mid">CLOSING</span>':'<span class="badge low">BEHIND</span>';
+  const gap=r.kv-r.bv;
+  const gapTxt=(gap>=0?'+':'')+(Math.abs(gap)<10&&!Number.isInteger(gap)?gap.toFixed(1):Math.round(gap*10)/10)+(String(r.b).includes('%')?' pp':'');
+  const w=Math.min(100,Math.max(2,ratio*100))/1.6;
+  return `<tr><td>${r.m}</td>
+   <td><span class="gapbar" style="width:${w}px"></span><b>${r.k}</b></td>
+   <td>${r.b}</td><td style="color:${gap>=0?'#0B9E6C':'#C0392B'};font-weight:600">${gapTxt}</td>
+   <td class="lft">${badge}</td><td class="lft" style="font-size:11px">${r.how}</td></tr>`;
+ }).join('');
+}
+
 function refresh(){
  const s=stats(baseFiltered());
- renderKpis(s); renderChips(); renderMembers();
+ renderKpis(s); renderChips(); renderMembers(); renderScorecard(s);
  funnelChart.data.datasets[0].data=[s.accounts,s.joined,s.mau,s.engaged,s.posters]; funnelChart.update();
  platChart.data.datasets[0].data=[s.desktop,s.android,s.ios]; platChart.update();
  benchChart.data.datasets[0].data=[s.adoption,s.stick,s.posting,s.engRate];
