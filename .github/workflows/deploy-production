@@ -1,0 +1,36 @@
+name: Deploy production
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Commit SHA, tag, or version to deploy"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+
+    environment:
+      name: production
+      url: https://your-production-url.example.com
+
+    steps:
+      - name: Checkout requested version
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.version }}
+
+      - name: Deploy
+        run: |
+          echo "Deploying ${{ inputs.version }}"
+          # Add your deployment command here
